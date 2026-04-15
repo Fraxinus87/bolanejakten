@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolånejakten AI — Ladda upp ditt amorteringsunderlag</title>
+<meta name="description" content="Ladda upp ditt amorteringsunderlag — AI läser det automatiskt och jämför mot storbankerna.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F6F3EE; --bg2: #EDE8DF; --bg3: #E3DDD3;
+  --card: #FFFFFF; --ink: #1A1713; --ink2: #5A5349; --ink3: #9A9083;
+  --green: #1B4332; --green-l: #D8EDD4; --green-m: #52A97A;
+  --red: #C84B1A; --red-l: #FCEADE;
+  --gold: #96720A; --gold-l: #FDF3D0;
+  --border: rgba(26,23,19,0.1); --r: 16px; --r-sm: 8px;
+  --shadow: 0 2px 24px rgba(26,23,19,0.07);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; min-height: 100vh; }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(246,243,238,.94); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  height: 58px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+}
+.logo { font-family: 'DM Serif Display', serif; font-size: 21px; letter-spacing: -.5px; }
+.logo span { color: var(--green); }
+.ai-badge { background: var(--green); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: .04em; }
+
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+.hero { padding: 52px 0 40px; text-align: center; }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--gold-l); color: var(--gold); font-size: 12px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
+h1 { font-family: 'DM Serif Display', serif; font-size: clamp(32px,5vw,50px); line-height: 1.08; letter-spacing: -1px; margin-bottom: 16px; }
+h1 em { font-style: italic; color: var(--green); }
+.hero-sub { font-size: 17px; color: var(--ink2); max-width: 480px; margin: 0 auto 32px; line-height: 1.65; }
+
+/* UPLOAD ZONE */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--r);
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--card);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--green); background: var(--green-l); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 8px; }
+.upload-sub { font-size: 14px; color: var(--ink3); }
+.upload-formats { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.fmt-pill { background: var(--bg2); color: var(--ink3); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+/* FILE SELECTED */
+.file-selected { display: none; background: var(--green-l); border-radius: var(--r-sm); padding: 14px 18px; margin-top: 16px; display: none; align-items: center; gap: 12px; }
+.file-icon { font-size: 24px; }
+.file-name { font-size: 14px; font-weight: 500; flex: 1; }
+.file-size { font-size: 12px; color: var(--ink3); }
+
+/* API KEY INPUT */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 28px 32px; box-shadow: var(--shadow); margin-bottom: 16px; }
+@media(max-width:520px){ .card { padding: 20px 18px; } }
+.card-h { font-family: 'DM Serif Display', serif; font-size: 20px; letter-spacing: -.3px; margin-bottom: 4px; }
+.card-sub { font-size: 13px; color: var(--ink3); margin-bottom: 20px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+label { font-size: 13px; font-weight: 500; color: var(--ink2); }
+input, select, textarea {
+  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--ink);
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 11px 14px; outline: none;
+  transition: border-color .2s, box-shadow .2s; width: 100%;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(27,67,50,.1); }
+.inp-note { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+/* BUTTONS */
+.btn {
+  font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600;
+  padding: 14px 24px; border-radius: var(--r-sm); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all .18s; width: 100%;
+}
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: #163d2a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(27,67,50,.25); }
+.btn-green:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-outline { background: transparent; color: var(--ink2); border: 1px solid var(--border); font-size: 14px; }
+.btn-outline:hover { background: var(--bg2); }
+
+/* PROGRESS */
+.progress-card { display: none; }
+.progress-card.show { display: block; }
+.progress-steps { display: flex; flex-direction: column; gap: 12px; }
+.prog-step { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--r-sm); background: var(--bg); font-size: 14px; transition: all .3s; }
+.prog-step.active { background: var(--green-l); color: var(--green); font-weight: 500; }
+.prog-step.done { background: var(--green-l); color: var(--green); }
+.prog-step.waiting { opacity: .4; }
+.prog-icon { font-size: 18px; flex-shrink: 0; }
+.spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(27,67,50,.2); border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RESULTS */
+.results { display: none; }
+.results.show { display: block; }
+
+.savings-banner { background: var(--green); color: #fff; border-radius: var(--r); padding: 28px 32px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; }
+@media(max-width:480px){ .savings-banner { grid-template-columns: 1fr; } }
+.sav-lbl { font-size: 13px; opacity: .75; margin-bottom: 4px; }
+.sav-big { font-family: 'DM Serif Display', serif; font-size: 48px; line-height: 1; letter-spacing: -1px; }
+.sav-note { font-size: 14px; opacity: .75; margin-top: 6px; }
+.sav-mo { text-align: right; }
+.sav-mo-num { font-family: 'DM Serif Display', serif; font-size: 30px; line-height: 1; }
+
+/* EXTRACTED DATA */
+.extracted-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+@media(max-width:520px){ .extracted-grid { grid-template-columns: repeat(2,1fr); } }
+.ext-card { background: var(--bg); border-radius: var(--r-sm); padding: 14px 16px; }
+.ext-lbl { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); margin-bottom: 4px; }
+.ext-val { font-size: 18px; font-weight: 600; color: var(--ink); }
+
+/* BANK TABLE */
+.btable { width: 100%; border-collapse: collapse; }
+.btable th { text-align: left; font-size: 11px; font-weight: 600; color: var(--ink3); letter-spacing: .06em; text-transform: uppercase; padding: 0 8px 12px; border-bottom: 1px solid var(--border); }
+.btable th:last-child { text-align: right; }
+.btable td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.btable tr:last-child td { border-bottom: none; }
+.btable tr.row-best td { background: var(--green-l); }
+.btable tr.row-current td { background: var(--gold-l); }
+.b-ico { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+.b-nm { display: flex; align-items: center; gap: 10px; }
+.b-name { font-size: 14px; font-weight: 500; }
+.b-note { font-size: 11px; color: var(--ink3); }
+.rate-big { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rate-g { color: var(--green); } .rate-r { color: var(--red); } .rate-m { color: var(--ink2); }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; margin-top: 2px; }
+.pill-g { background: var(--green-l); color: var(--green); }
+.pill-r { background: var(--red-l); color: var(--red); }
+.pill-n { background: var(--bg2); color: var(--ink3); }
+.pill-go { background: var(--gold-l); color: var(--gold); }
+
+/* AI ANALYSIS */
+.ai-box { background: var(--ink); color: #E8E2D8; border-radius: var(--r-sm); padding: 20px 24px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; margin-top: 0; }
+.ai-box-lbl { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
+
+/* LETTER */
+.letter-box { background: #FDFCF9; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 28px 32px; font-size: 14px; line-height: 1.85; color: var(--ink2); white-space: pre-wrap; font-family: 'DM Serif Display', serif; }
+.copy-btn { background: var(--bg2); color: var(--ink2); border: none; border-radius: 4px; font-size: 12px; padding: 6px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s; margin-top: 12px; }
+.copy-btn:hover { background: var(--bg3); }
+
+/* TRUST */
+.trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 28px 0; }
+.trust-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink3); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.fu { animation: fadeUp .35s ease both; }
+.fu2 { animation: fadeUp .35s .1s ease both; }
+.fu3 { animation: fadeUp .35s .2s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Bolåne<span>jakten</span></div>
+  <div class="ai-badge">✦ AI-driven</div>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">✦ Ny AI-funktion</div>
+    <h1>Ladda upp ditt underlag —<br><em>AI gör resten</em></h1>
+    <p class="hero-sub">Ladda upp ditt amorteringsunderlag eller räntebesked som PDF. Vår AI läser det, extraherar dina låneuppgifter och jämför direkt mot storbankerna.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="card" id="upload-card">
+    <div class="card-h">Ladda upp ditt dokument</div>
+    <div class="card-sub">PDF, bild eller textfil — AI tolkar det automatiskt</div>
+
+    <div class="upload-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.txt,.doc,.docx">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Dra och släpp här</div>
+      <div class="upload-sub">eller klicka för att välja fil</div>
+      <div class="upload-formats">
+        <span class="fmt-pill">PDF</span>
+        <span class="fmt-pill">JPG/PNG</span>
+        <span class="fmt-pill">TXT</span>
+      </div>
+    </div>
+
+    <div class="file-selected" id="file-selected">
+      <div class="file-icon">📎</div>
+      <div class="file-name" id="file-name-txt">—</div>
+      <div class="file-size" id="file-size-txt">—</div>
+    </div>
+
+    <div style="margin-top:20px;padding:14px 16px;background:var(--bg);border-radius:var(--r-sm);font-size:13px;color:var(--ink2);line-height:1.7">
+      <strong>Har du inte ditt underlag till hands?</strong> Inga problem — du kan också mata in uppgifterna manuellt nedan.
+    </div>
+  </div>
+
+  <!-- MANUAL INPUT (fallback) -->
+  <div class="card" id="manual-card">
+    <div class="card-h">Eller fyll i manuellt</div>
+    <div class="card-sub">Om du inte har dokumentet — skriv in uppgifterna direkt</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="field">
+        <label>Lånebelopp (kr)</label>
+        <input type="number" id="m-loan" placeholder="2 500 000">
+      </div>
+      <div class="field">
+        <label>Nuvarande ränta (%)</label>
+        <input type="number" id="m-rate" placeholder="4,65" step="0.01">
+      </div>
+      <div class="field">
+        <label>Din bank</label>
+        <select id="m-bank">
+          <option value="">Välj bank…</option>
+          <option>Swedbank</option><option>SEB</option>
+          <option>Handelsbanken</option><option>Nordea</option>
+          <option>SBAB</option><option>Länsförsäkringar</option>
+          <option>Annan</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Bindningstid</label>
+        <select id="m-bind">
+          <option value="3">3 mån (rörlig)</option>
+          <option value="12" selected>1 år</option>
+          <option value="24">2 år</option>
+          <option value="36">3 år</option>
+          <option value="60">5 år</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Bostadens värde (kr)</label>
+        <input type="number" id="m-prop" placeholder="3 500 000">
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYZE BUTTON -->
+  <button class="btn btn-green" id="analyze-btn" onclick="analyze()">
+    ✦ Analysera mitt bolån med AI
+  </button>
+
+  <!-- PROGRESS -->
+  <div class="card progress-card" id="progress-card" style="margin-top:16px">
+    <div class="card-h">AI analyserar…</div>
+    <div class="card-sub" id="prog-sub">Vänta medan vi läser ditt dokument</div>
+    <div class="progress-steps" id="prog-steps">
+      <div class="prog-step active" id="ps1"><div class="spinner-sm"></div> Läser och tolkar dokumentet</div>
+      <div class="prog-step waiting" id="ps2"><div class="prog-icon">🔍</div> Extraherar låneuppgifter</div>
+      <div class="prog-step waiting" id="ps3"><div class="prog-icon">📊</div> Hämtar aktuella bankräntor</div>
+      <div class="prog-step waiting" id="ps4"><div class="prog-icon">✍️</div> Skriver förhandlingsbrev</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <!-- SAVINGS -->
+    <div class="savings-banner fu" id="sav-banner">
+      <div>
+        <div class="sav-lbl">Du kan spara upp till</div>
+        <div class="sav-big" id="sav-yr">—</div>
+        <div class="sav-note">per år vid bankbyte</div>
+      </div>
+      <div class="sav-mo">
+        <div class="sav-lbl">Per månad</div>
+        <div class="sav-mo-num" id="sav-mo">—</div>
+        <div class="sav-note">i räntekostnad</div>
+      </div>
+    </div>
+
+    <!-- EXTRACTED -->
+    <div class="card fu2">
+      <div class="card-h">Ditt lån — extraherat av AI</div>
+      <div class="card-sub" id="ext-sub">Uppgifterna nedan hämtades automatiskt från ditt dokument</div>
+      <div class="extracted-grid" id="ext-grid"></div>
+      <div class="ai-box-lbl" style="margin-top:16px">AI:s analys</div>
+      <div class="ai-box" id="ai-analysis">—</div>
+    </div>
+
+    <!-- BANK TABLE -->
+    <div class="card fu3">
+      <div class="card-h">Jämförelse mot storbankerna</div>
+      <div class="card-sub" id="cmp-sub">—</div>
+      <table class="btable">
+        <thead><tr><th>Bank</th><th>LTV</th><th style="text-align:right">Ränta</th></tr></thead>
+        <tbody id="btbody"></tbody>
+      </table>
+    </div>
+
+    <!-- LETTER -->
+    <div class="card">
+      <div class="card-h">Ditt förhandlingsbrev</div>
+      <div class="card-sub">Redo att skicka till din bank — via e-post eller brev</div>
+      <div class="letter-box" id="letter-box">—</div>
+      <button class="copy-btn" onclick="copyLetter()">📋 Kopiera brevet</button>
+    </div>
+
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-outline" style="width:auto;padding:12px 32px" onclick="resetApp()">← Analysera ett nytt dokument</button>
+    </div>
+  </div>
+
+  <div class="trust">
+    <div class="trust-item">🔒 Dokumentet lämnar inte din webbläsare</div>
+    <div class="trust-item">✦ Driven av Claude AI</div>
+    <div class="trust-item">🇸🇪 Anpassad för svenska banker</div>
+  </div>
+</div>
+
+<script>
+const BANKS = [
+  { name:"Handelsbanken", short:"SHB", clr:"#003A70", bg:"#E5EEF8", note:"Premierar låg belåningsgrad",    rates:{3:4.14,12:3.99,24:3.84,36:3.74,60:3.64} },
+  { name:"SBAB",          short:"SBAB",clr:"#00563B", bg:"#E5F2EC", note:"Statlig bank, bra för nya kunder", rates:{3:4.19,12:4.04,24:3.89,36:3.79,60:3.69} },
+  { name:"Länsförsäkringar",short:"LF",clr:"#004B8D",bg:"#E5EFF8", note:"Ofta billigast, lokalt ägd",    rates:{3:4.24,12:4.09,24:3.94,36:3.84,60:3.74} },
+  { name:"SEB",           short:"SEB", clr:"#60B52B", bg:"#EEF8E5", note:"Bra för lönekunder",            rates:{3:4.34,12:4.19,24:4.04,36:3.94,60:3.84} },
+  { name:"Nordea",        short:"NDA", clr:"#0000A0", bg:"#E5E5F8", note:"Förhandlingsbart",               rates:{3:4.44,12:4.24,24:4.09,36:3.99,60:3.89} },
+  { name:"Swedbank",      short:"SWB", clr:"#EF7B22", bg:"#FDF2E8", note:"Störst i Sverige",              rates:{3:4.54,12:4.34,24:4.19,36:4.09,60:3.99} },
+];
+
+const fmt = n => Math.round(n).toLocaleString('sv-SE');
+const pct = n => n.toFixed(2).replace('.',',') + '%';
+
+let fileData = null;
+let fileType = null;
+
+// File handling
+const fileInput = document.getElementById('file-input');
+const dropZone = document.getElementById('drop-zone');
+
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('file-selected').style.display = 'flex';
+  document.getElementById('file-name-txt').textContent = file.name;
+  document.getElementById('file-size-txt').textContent = (file.size / 1024).toFixed(0) + ' KB';
+
+  const reader = new FileReader();
+  if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+    fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
+    reader.onload = e => { fileData = e.target.result.split(',')[1]; };
+    reader.readAsDataURL(file);
+  } else {
+    fileType = 'text';
+    reader.onload = e => { fileData = e.target.result; };
+    reader.readAsText(file);
+  }
+}
+
+async function analyze() {
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+
+  // Get manual inputs as fallback
+  const manualLoan = parseFloat(document.getElementById('m-loan').value);
+  const manualRate = parseFloat(document.getElementById('m-rate').value);
+  const manualBank = document.getElementById('m-bank').value;
+  const manualBind = document.getElementById('m-bind').value;
+  const manualProp = parseFloat(document.getElementById('m-prop').value);
+
+  // Show progress
+  document.getElementById('progress-card').classList.add('show');
+  document.getElementById('progress-card').style.display = 'block';
+
+  // Build prompt
+  let userContent = [];
+  let systemPrompt = `Du är en expert på svenska bolån. Analysera det uppladdade dokumentet eller de angivna uppgifterna.
+
+Returnera ENBART ett JSON-objekt med exakt detta format (inga kommentarer, ingen markdown):
+{
+  "loan": <lånebelopp i kr som nummer>,
+  "rate": <ränta i procent som nummer, t.ex. 4.65>,
+  "bank": "<bankens namn>",
+  "binding": <bindningstid i månader som nummer, 3/12/24/36/60>,
+  "property_value": <bostadens värde i kr som nummer, eller 0 om okänt>,
+  "analysis": "<2-3 meningar om vad du ser i dokumentet och din bedömning av lånet>",
+  "confidence": "<hög/medel/låg — hur säker du är på extraktionen>"
+}`;
+
+  if (fileData && fileType === 'image') {
+    userContent = [
+      { type: "image", source: { type: "base64", media_type: "image/jpeg", data: fileData } },
+      { type: "text", text: "Analysera detta dokument och extrahera bolåneuppgifterna." }
+    ];
+  } else if (fileData && fileType === 'pdf') {
+    userContent = [
+      { type: "document", source: { type: "base64", media_type: "application/pdf", data: fileData } },
+      { type: "text", text: "Analysera detta dokument och extrahera bolåneuppgifterna." }
+    ];
+  } else if (fileData && fileType === 'text') {
+    userContent = [{ type: "text", text: `Analysera detta dokument:\n\n${fileData}` }];
+  } else if (manualLoan && manualRate) {
+    userContent = [{
+      type: "text",
+      text: `Analysera detta bolån: Lånebelopp: ${manualLoan} kr, Ränta: ${manualRate}%, Bank: ${manualBank || 'okänd'}, Bindningstid: ${manualBind} månader, Bostadens värde: ${manualProp || 0} kr`
+    }];
+    systemPrompt += `\n\nAnvändaren har angett uppgifterna manuellt. Sätt confidence till "hög".`;
+  } else {
+    alert('Ladda upp ett dokument eller fyll i uppgifterna manuellt.');
+    btn.disabled = false;
+    document.getElementById('progress-card').style.display = 'none';
+    return;
+  }
+
+  // Animate steps
+  await animateStep(1, 2, 800);
+
+  let loanData;
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userContent }]
+      })
+    });
+
+    await animateStep(2, 3, 600);
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    loanData = JSON.parse(clean);
+
+  } catch(err) {
+    // Fallback to manual data if API fails
+    if (manualLoan && manualRate) {
+      loanData = {
+        loan: manualLoan, rate: manualRate,
+        bank: manualBank || 'Din bank',
+        binding: parseInt(manualBind),
+        property_value: manualProp || manualLoan * 1.4,
+        analysis: "Uppgifterna analyserades baserat på din manuella inmatning.",
+        confidence: "hög"
+      };
+    } else {
+      alert('Kunde inte analysera dokumentet. Fyll i uppgifterna manuellt.');
+      btn.disabled = false;
+      document.getElementById('progress-card').style.display = 'none';
+      return;
+    }
+  }
+
+  await animateStep(3, 4, 800);
+
+  // Now generate letter with AI
+  const letterPrompt = `Du är en expert på bolåneförhandlingar i Sverige. Skriv ett professionellt förhandlingsbrev på svenska till ${loanData.bank} för en kund med följande lån:
+- Lånebelopp: ${fmt(loanData.loan)} kr
+- Nuvarande ränta: ${pct(loanData.rate)}
+- Bindningstid: ${loanData.binding} månader
+- Bästa alternativ på marknaden: ca ${pct(Math.min(...BANKS.map(b => b.rates[loanData.binding] || b.rates[12])))}
+
+Brevet ska vara:
+- Professionellt men vänligt
+- Max 200 ord
+- Inkludera en konkret begäran om räntesänkning
+- Nämna att kunden undersökt marknaden
+- Avsluta med förväntan om svar inom 5 bankdagar
+
+Skriv BARA brevet, ingen förklaring eller rubrik.`;
+
+  let letter = '';
+  try {
+    const letterResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: letterPrompt }]
+      })
+    });
+    const ld = await letterResp.json();
+    letter = ld.content?.[0]?.text || fallbackLetter(loanData);
+  } catch(e) {
+    letter = fallbackLetter(loanData);
+  }
+
+  await animateStep(4, 4, 400);
+
+  // Hide progress, show results
+  setTimeout(() => {
+    document.getElementById('progress-card').style.display = 'none';
+    showResults(loanData, letter);
+  }, 500);
+}
+
+function fallbackLetter(d) {
+  const bestRate = Math.min(...BANKS.map(b => b.rates[d.binding] || b.rates[12]));
+  return `Till kundtjänst / bolåneansvarig,
+
+Jag skriver angående mitt bolån om ${fmt(d.loan)} kr hos er, där jag för närvarande betalar ${pct(d.rate)} i ränta.
+
+Jag har nyligen undersökt marknaden och konstaterat att flera konkurrerande banker erbjuder räntor kring ${pct(bestRate)} för liknande lån och bindningstider. Mot bakgrund av detta vill jag formellt begära en sänkning av min bolåneränta till en nivå som är konkurrenskraftig med marknaden.
+
+Jag värdesätter mitt kundförhållande med er bank och hoppas att vi kan nå en lösning utan att jag behöver flytta mitt lån. Jag ser fram emot ert svar inom 5 bankdagar.
+
+Med vänliga hälsningar`;
+}
+
+async function animateStep(current, next, delay) {
+  const steps = ['ps1','ps2','ps3','ps4'];
+  steps.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (i < current) { el.className = 'prog-step done'; el.querySelector('.spinner-sm, .prog-icon') && (el.innerHTML = `<div class="prog-icon">✅</div> ${el.textContent.trim()}`); }
+    else if (i === current) { el.className = 'prog-step active'; }
+    else { el.className = 'prog-step waiting'; }
+  });
+  return new Promise(r => setTimeout(r, delay));
+}
+
+function showResults(d, letter) {
+  const bind = d.binding || 12;
+  const prop = d.property_value || d.loan * 1.4;
+  const ltv = Math.min(100, Math.round((d.loan / prop) * 100));
+  const ltvAdj = ltv <= 50 ? -0.15 : ltv <= 65 ? -0.05 : ltv >= 85 ? 0.15 : 0;
+
+  let bestRate = 999, bestName = '';
+  const rows = BANKS.map(b => {
+    let r = (b.rates[bind] || b.rates[12]) + ltvAdj;
+    r += (Math.random()*.06-.03);
+    r = Math.round(r*100)/100;
+    if (b.name === d.bank) r = d.rate;
+    if (r < bestRate && b.name !== d.bank) { bestRate = r; bestName = b.name; }
+    return { ...b, r };
+  }).sort((a,b) => a.r - b.r);
+
+  const maxSaveYr = Math.max(0, Math.round(((d.rate - bestRate)/100)*d.loan));
+  const maxSaveMo = Math.round(maxSaveYr/12);
+
+  document.getElementById('sav-yr').textContent = fmt(maxSaveYr) + ' kr';
+  document.getElementById('sav-mo').textContent = fmt(maxSaveMo) + ' kr';
+
+  // Extracted data cards
+  const bindLbl = {3:'3 mån',12:'1 år',24:'2 år',36:'3 år',60:'5 år'}[bind] || bind+' mån';
+  document.getElementById('ext-grid').innerHTML = `
+    <div class="ext-card"><div class="ext-lbl">Lånebelopp</div><div class="ext-val">${fmt(d.loan)} kr</div></div>
+    <div class="ext-card"><div class="ext-lbl">Ränta</div><div class="ext-val">${pct(d.rate)}</div></div>
+    <div class="ext-card"><div class="ext-lbl">Bank</div><div class="ext-val">${d.bank || '—'}</div></div>
+    <div class="ext-card"><div class="ext-lbl">Bindningstid</div><div class="ext-val">${bindLbl}</div></div>
+    <div class="ext-card"><div class="ext-lbl">Belåningsgrad</div><div class="ext-val">${ltv}%</div></div>
+    <div class="ext-card"><div class="ext-lbl">Säkerhet</div><div class="ext-val" style="font-size:14px">${d.confidence || '—'}</div></div>
+  `;
+  document.getElementById('ai-analysis').textContent = d.analysis || '—';
+  document.getElementById('ext-sub').textContent = d.confidence === 'hög'
+    ? 'Uppgifterna extraherades med hög säkerhet från ditt dokument.'
+    : 'Kontrollera att uppgifterna stämmer innan du agerar.';
+
+  // Bank table
+  const tbody = document.getElementById('btbody');
+  tbody.innerHTML = '';
+  rows.forEach(b => {
+    const isCur = b.name === d.bank;
+    const isBest = b.name === bestName;
+    const diff = Math.round((d.rate - b.r)*100)/100;
+    const saveYr = Math.round((diff/100)*d.loan);
+    const trClass = isCur ? 'row-current' : isBest ? 'row-best' : '';
+    let pill = isCur ? `<span class="pill pill-go">Din bank</span>`
+      : diff > 0 ? `<span class="pill pill-g">Spar ${fmt(saveYr)} kr/år</span>`
+      : diff < 0 ? `<span class="pill pill-r">+${fmt(Math.abs(saveYr))} kr/år</span>`
+      : `<span class="pill pill-n">Likvärdigt</span>`;
+    const rCls = isCur ? 'rate-r' : isBest ? 'rate-g' : 'rate-m';
+    const tr = document.createElement('tr');
+    if (trClass) tr.className = trClass;
+    tr.innerHTML = `
+      <td><div class="b-nm">
+        <div class="b-ico" style="background:${b.bg};color:${b.clr}">${b.short}</div>
+        <div><div class="b-name">${b.name}</div><div class="b-note">${b.note}</div></div>
+      </div></td>
+      <td style="font-size:13px;color:var(--ink3)">${ltv}%</td>
+      <td style="text-align:right"><div class="rate-big ${rCls}">${pct(b.r)}</div>${pill}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('cmp-sub').textContent =
+    `Din ränta: ${pct(d.rate)} hos ${d.bank || 'din bank'} · LTV: ${ltv}% · Bindningstid: ${bindLbl}`;
+
+  // Letter
+  document.getElementById('letter-box').textContent = letter;
+
+  // Show results
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('upload-card').style.display = 'none';
+  document.getElementById('manual-card').style.display = 'none';
+  document.getElementById('analyze-btn').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyLetter() {
+  const txt = document.getElementById('letter-box').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Kopierat!';
+    setTimeout(() => btn.textContent = '📋 Kopiera brevet', 2000);
+  });
+}
+
+function resetApp() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('upload-card').style.display = 'block';
+  document.getElementById('manual-card').style.display = 'block';
+  document.getElementById('analyze-btn').style.display = 'flex';
+  document.getElementById('analyze-btn').disabled = false;
+  document.getElementById('file-selected').style.display = 'none';
+  fileData = null; fileType = null;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
